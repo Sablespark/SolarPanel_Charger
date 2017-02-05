@@ -1,0 +1,148 @@
+// Boost Maximum Power Point Tracking
+// by: Rusdy Simano
+// Last Update: 19 April 2014
+// 
+
+
+const int pin_Vin = 0;          // pin of Vin connected to (A0)
+const int pin_Iin = 3;          // pin of Iin connected to (A3)
+const int pin_Vout = 2;         // pin of Vout connected to (A2)
+const int pin_Iout = 1;         // pin of Iout connected to (A1)
+
+int Vin = 0;	 // Variable to store Input Voltage, this is RAW unit (0 - 1023)
+int Iin = 0;	 // Variable to store Input Current, this is RAW unit (0 - 1023)
+int Vout = 0;	 // Variable to store Output Voltage, this is RAW unit (0 - 1023)
+int Iout = 0;	 // Variable to store Output Current, this is RAW unit (0 - 1023)
+int currentPrev = 0;	// Variable to store Previous Sampled Current, this is RAW unit (0 - 1023)
+int currentDiff = 0;	// Variable to store Current Difference, this is unitless
+
+boolean mppt = false;   // Variable to store state of MPPT
+
+const int Vout_max = 830;	// Variable to store Vout_max, this is RAW unit (0 - 1023)
+const int Iout_max = 400;	// Variable to store Iout_max, this is RAW unit (0 - 1023)
+const int Vin_min = 430;	// Variable to store Vin_min, this is RAW unit (0 - 1023)
+const int Iin_max = 1000;	// Variable to store Iin_max, this is RAW unit (0 - 1023)
+
+const int switchPin = 12;	// pin of switching output connected to
+
+long i = 0;	 // Variable to store iteration
+int onTime = 2;	 // Variable to store ON time of MOSFET, in microseconds
+
+
+
+void setup()
+{
+// Serial.begin(9600);
+
+// running with high speed clock (set prescale to 16)
+// so that analog sampling time is now approximately 17microsecond
+// Source: Arduino Cookbook by MichaelMargolis 2nd chapter recipe 18-9
+
+  bitClear(ADCSRA,ADPS0) ;
+  bitClear(ADCSRA,ADPS1) ;
+  bitSet(ADCSRA,ADPS2) ;
+
+  pinMode(switchPin, OUTPUT);      // sets the switchPin as digital output
+
+}
+
+void loop()
+{
+
+  digitalWrite(switchPin, LOW);    // sets the switchPin OFF
+  
+  Vout = analogRead(pin_Vout);	 // Read Output Voltage  
+  Vin = analogRead(pin_Vin);	 // Read Input Voltage
+  Iout = analogRead(pin_Iout);  // Read Output Current
+
+
+  currentDiff = Iout - currentPrev;
+
+
+  if (((currentDiff >= 0) && (Iout < Iout_max)) || ((Iout < 20) && (Vout < Vout_max)) )
+  {
+    onTime = onTime;	// If output current is increasing, keep increasing onTime
+  }
+  else
+  {
+    onTime = onTime - 2; // else, reduce onTime
+  }
+  
+  if (onTime < 1)
+  {
+    onTime = 1;	 // making sure onTime is not negative
+  }
+  else if (onTime > 40)
+  {
+    onTime = 40; // making sure onTime does not exceed 100 microseconds
+  }
+
+  if ((Vin < Vin_min) || (Vout >= Vout_max))
+  {
+    onTime = 1;
+    mppt = false;
+  }
+  else if ((Vout < Vout_max) && (Vin >= Vin_min))
+  {
+    mppt = true;
+  }
+  else
+  {
+    mppt = false;
+  }
+
+
+  i = 0;
+
+  while ((i < 5000) && mppt)
+  {
+     
+    digitalWrite(switchPin, HIGH);	// sets the switchPin ON
+    delayMicroseconds(onTime);
+    digitalWrite(switchPin, LOW);    // sets the switchPin OFF
+    delayMicroseconds(10);	 // OFF time of MOSFET
+
+    i = i + 1;
+
+  }
+
+
+  Vout = analogRead(pin_Vout);	 // Read Output Voltage  
+  Vin = analogRead(pin_Vin);	 // Read Input Voltage
+  Iout = analogRead(pin_Iout);  // Read Output Current
+
+  
+  currentPrev = Iout;
+  onTime = onTime + 1;
+
+  if ((Vin < Vin_min) || (Vout >= Vout_max))
+  {
+    onTime = 1;
+    mppt = false;
+  }
+  else if ((Vout < Vout_max) && (Vin >= Vin_min))
+  {
+    mppt = true;
+  }
+  else
+  {
+    mppt = false;
+  }
+
+
+  i = 0;
+
+  while ((i < 5000) && mppt)
+  {
+     
+    digitalWrite(switchPin, HIGH);	// sets the switchPin ON
+    delayMicroseconds(onTime);
+    digitalWrite(switchPin, LOW);    // sets the switchPin OFF
+    delayMicroseconds(10);	 // OFF time of MOSFET
+
+    i = i + 1;
+
+  }
+
+
+}
