@@ -1,9 +1,3 @@
-// Boost Maximum Power Point Tracking
-// by: Rusdy Simano
-// Last Update: 19 April 2014
-// 
-
-
 const int pin_Vin = 0;          // pin of Vin connected to (A0)
 const int pin_Iin = 3;          // pin of Iin connected to (A3)
 const int pin_Vout = 2;         // pin of Vout connected to (A2)
