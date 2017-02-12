@@ -2,6 +2,33 @@
 const int pin_Iin = 0;          // pin of Iin connected to (A0)
 const int pin_Vin = 1;         // pin of Vin connected to (A1)
 
-Iin = analogread(pin_Iin);
-Vin = analogread(pin_Vin);
+Iin = analogread(pin_Iin);   //read in the value from the Solar Panel
+Vin = analogread(pin_Vin);   //read in the value from the Solar Panel
 
+int Pc = 0         // Current Power
+int Pb = 0         // previous Power
+int Vin_prev = 0   //previous input Voltage measurement
+
+//Perturb and Observe Algorithm!!
+
+Pc = Iin * Vin; // Calulating the current power
+
+if Pc > Pb
+{
+  if Vin > Vin_prev
+  
+    //increase PWM
+  
+  else 
+  
+    //decrease PWM
+}    
+else if Vin > Vin_prev
+
+  // increase PWM
+  
+else 
+
+  //decrease PWM
+  
+  
