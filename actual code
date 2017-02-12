@@ -2,3 +2,6 @@
 const int pin_Iin = 0;          // pin of Iin connected to (A0)
 const int pin_Vin = 1;         // pin of Vin connected to (A1)
 
+Iin = analogread(pin_Iin);
+Vin = analogread(pin_Vin);
+
